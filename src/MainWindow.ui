@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>877</width>
+    <height>568</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Программа управления СКЗИ 450Б</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../icons/450Б.png</normaloff>../icons/450Б.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="modeLabel">
+           <property name="text">
+            <string>Режим:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="modeComboBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContentsOnFirstShow</enum>
+           </property>
+           <item>
+            <property name="text">
+             <string>Работа</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Контроль</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Регламент</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="resultsPlainTextEdit">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>877</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="clearMessagesAction"/>
+    <addaction name="showSettingsAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="requestsMenu">
+    <property name="title">
+     <string>Запросы</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="keysMenu">
+    <property name="title">
+     <string>Ключи</string>
+    </property>
+    <addaction name="workAreaKeysAction"/>
+    <addaction name="storageAreaKeysAction"/>
+    <addaction name="showKeysNumberAction"/>
+    <addaction name="generateKeyAction"/>
+    <addaction name="inputKeyAction"/>
+    <addaction name="outputKeyAction"/>
+    <addaction name="eraseKeyAction"/>
+    <addaction name="eraseStorageKeyZoneAction"/>
+   </widget>
+   <widget class="QMenu" name="commandsMenu">
+    <property name="title">
+     <string>Команды</string>
+    </property>
+    <addaction name="setClockAction"/>
+    <addaction name="setAddrAction"/>
+    <addaction name="changePasswdAction"/>
+    <addaction name="resetDeviceAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>Помощь</string>
+    </property>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="requestsMenu"/>
+   <addaction name="keysMenu"/>
+   <addaction name="commandsMenu"/>
+   <addaction name="helpMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="showSettingsAction">
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+  </action>
+  <action name="exitAction">
+   <property name="text">
+    <string>Выйти</string>
+   </property>
+  </action>
+  <action name="workAreaKeysAction">
+   <property name="text">
+    <string>Показать ключи в рабочей области</string>
+   </property>
+  </action>
+  <action name="storageAreaKeysAction">
+   <property name="text">
+    <string>Показать ключи в области хранения</string>
+   </property>
+  </action>
+  <action name="generateKeyAction">
+   <property name="text">
+    <string>Сгенерировать ключ</string>
+   </property>
+  </action>
+  <action name="inputKeyAction">
+   <property name="text">
+    <string>Ввести ключ с внешнего носителя</string>
+   </property>
+  </action>
+  <action name="eraseKeyAction">
+   <property name="text">
+    <string>Стереть ключ</string>
+   </property>
+  </action>
+  <action name="outputKeyAction">
+   <property name="text">
+    <string>Вывести ключ на внешний носитель</string>
+   </property>
+  </action>
+  <action name="settingsAction">
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+  </action>
+  <action name="resetDeviceAction">
+   <property name="text">
+    <string>Сбросить устройство</string>
+   </property>
+  </action>
+  <action name="eraseStorageKeyZoneAction">
+   <property name="text">
+    <string>Стереть зону хранения ключей</string>
+   </property>
+  </action>
+  <action name="clearMessagesAction">
+   <property name="text">
+    <string>Стереть сообщения</string>
+   </property>
+  </action>
+  <action name="setClockAction">
+   <property name="text">
+    <string>Установить время</string>
+   </property>
+  </action>
+  <action name="changePasswdAction">
+   <property name="text">
+    <string>Сменить пароль</string>
+   </property>
+  </action>
+  <action name="showKeysNumberAction">
+   <property name="text">
+    <string>Показать возможное количество ключей</string>
+   </property>
+  </action>
+  <action name="setAddrAction">
+   <property name="text">
+    <string>Установить адреса</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>exitAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>271</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>clearMessagesAction</sender>
+   <signal>triggered()</signal>
+   <receiver>resultsPlainTextEdit</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>438</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
