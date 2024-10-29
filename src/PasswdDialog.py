@@ -11,7 +11,7 @@ class PasswdDialog(QDialog):
         super().__init__(parent)
         uic.loadUi(os.path.join(CURRENT_DIR, 'PasswdDialog.ui'), self)
         
-        validator = QRegularExpressionValidator(QRegularExpression("[A-Z,a-z,0-9]+"))
+        validator = QRegularExpressionValidator(QRegularExpression("[0-9]+"))
         self.passwdLineEdit.setValidator(validator)
         
         self.iconShow = QIcon('../icons/view.png')

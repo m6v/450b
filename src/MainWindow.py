@@ -203,10 +203,10 @@ class MainWindow(QMainWindow):
         
     def set_admin_password(self):
         '''Дважды запросить новый пароль и, если они совпадают, отпавить запрос на смену пароля'''
-        passwd = self.passwdDialog.exec('Введите новый пароль (до 12 симв.)')
+        passwd = self.passwdDialog.exec('Введите новый пароль (до 12 цифр)')
         if not passwd:
             return False
-        confrm = self.passwdDialog.exec('Подтвердите новый пароль (до 12 симв.)')
+        confrm = self.passwdDialog.exec('Подтвердите новый пароль (до 12 цифр)')
         if not confrm:
             return False
         if passwd != confrm:

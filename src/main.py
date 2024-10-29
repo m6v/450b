@@ -13,7 +13,8 @@ from PyQt5.Qt import QApplication
 from MainWindow import MainWindow
 
 if __name__ == '__main__':
-
+    '''
+    # Попытка сделать запуск с правами root'а неудачная, выдает сообщение об ошибке
     if os.getuid() != 0:
         # args = ['pkexec'] + [sys.executable] + sys.argv
         DISPLAY = os.environ['DISPLAY']
@@ -22,8 +23,8 @@ if __name__ == '__main__':
         # os.execlp(args[0], *args)
         os.execlpe(args[0], *args, {'DISPLAY': DISPLAY, 'XAUTHORITY': XAUTHORITY, 'XDG_RUNTIME_DIR': '/tmp/runtime-root'})
     else:
-
-        app = QApplication(sys.argv)
-        window = MainWindow()
-        window.show()
-        sys.exit(app.exec())
+    '''
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
