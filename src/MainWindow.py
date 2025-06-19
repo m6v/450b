@@ -20,8 +20,11 @@ from SettingsDialog import SettingsDialog
 
 from protoproc import *
 
+DEBUG = True
+
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 SETTINGS_FILE = os.path.join(CURRENT_DIR, 'settings.ini')
+
 
 class RecieverThread(QThread):
     trigger = pyqtSignal(bytes)
@@ -66,6 +69,9 @@ class MainWindow(QMainWindow):
                 if passwd:
                     break
             self.passwd = bytearray(passwd, 'utf-8')
+
+        # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
+        self.debug = int(self.settings.value('Debug', 0))
         
         hostname = socket.gethostname()
         # Подсчитать 16-разрядную контр. сумму от hostname и использовать ее в качестве идентификатора программы
@@ -74,7 +80,7 @@ class MainWindow(QMainWindow):
         self.instruction_number = 0 # Порядковый номер инструкции, увеличивается на единицу после отправки команды
         
         # Статус изделия
-        self.mode = 0 
+        self.mode = WORK 
         
         self.settings.beginGroup('Common')
         self.host = self.settings.value('Host', '192.168.0.3')
@@ -107,7 +113,7 @@ class MainWindow(QMainWindow):
         # Соединить сигналы и слоты
         self.workAreaKeysAction.triggered.connect(functools.partial(self.send_request, ask_keys_workspace()))
         self.storageAreaKeysAction.triggered.connect(functools.partial(self.send_request, ask_keys_storage()))
-        self.modeComboBox.currentIndexChanged.connect(self.mode_changed)
+
         self.inputKeyAction.triggered.connect(self.input_key)
         self.eraseKeyAction.triggered.connect(self.erase_key)
         self.outputKeyAction.triggered.connect(self.output_key)
@@ -119,9 +125,14 @@ class MainWindow(QMainWindow):
         self.resetDeviceAction.triggered.connect(self.reset_all)
         self.setAddrAction.triggered.connect(self.set_address)
 
+        self.modeComboBox.currentIndexChanged.connect(self.mode_changed)
+
     def send_request(self, body):
         '''Отправка запроса'''
         header = self.program_id + self.instruction_number.to_bytes(2, 'big') + self.passwd
+        if self.debug:
+            print('Send to %s:%s' % (self.host, self.port) )
+            hexdump(header + body)
         try:
             self.sock.sendto(header + body, (self.host, self.port))
             self.instruction_number += 1
@@ -135,12 +146,15 @@ class MainWindow(QMainWindow):
     def process_reply(self, reply):
         '''Вызов функции обработки квитанций с передачей ей функции вывода результатов обработки
            Функция возвращает None или словарь с параметрами'''
+        if self.debug:
+            print('Recieve')
+            hexdump(reply)
         result = parse_reply(reply, self.show_message)
         try:
             if result['mode'] is not None:
                 self.mode = result['mode']
                 self.modeComboBox.setCurrentIndex(self.mode)
-                self.keysMenu.setEnabled(self.mode == 2)
+                self.keysMenu.setEnabled(self.mode == REGLAMENT)
         except:
             pass
 
@@ -149,7 +163,7 @@ class MainWindow(QMainWindow):
         if index != self.mode:
             self.send_request(set_mode(index))
             self.mode = index
-            self.keysMenu.setEnabled(self.mode == 2)
+            self.keysMenu.setEnabled(self.mode == REGLAMENT)
 
     def input_key(self):
         '''Вывести диалоговое окно ввода идентификатора ключа и отправить запрос на ввод ключа'''
@@ -185,16 +199,16 @@ class MainWindow(QMainWindow):
 
         self.setCursor(QCursor(Qt.WaitCursor))
 
-        # Перевести в режим генерации ключей, пауза, установить время, перевести в режим регламент, генерировать ключ
-        self.send_request(set_mode(3))
+        self.send_request(set_mode(KEYGEN))
         time.sleep(10)
         self.send_request(set_clock())
-        self.send_request(set_mode(2))
+        self.send_request(set_mode(REGLAMENT))
         time.sleep(10)
         self.send_request(gen_key(key))
-        # Чтобы устройство реагировало на запросы, переключить его в режим работа, пауза 5-20 сек, установить время!
         time.sleep(10)
-        self.send_request(set_mode(0))
+        # Чтобы устройство реагировало на запросы, нужно переключить его в режим "Работа",
+        # выдержать паузу 5-20 сек и снова установить время!
+        self.send_request(set_mode(WORK))
         time.sleep(10)
         self.send_request(set_clock())
         
@@ -218,8 +232,6 @@ class MainWindow(QMainWindow):
 
     def set_address(self):
         '''Установка IP-адресов интерфейсов изделия'''
-        # Не понятно как устанавливать маску сети и порт для внутреннего интерфейса управления,
-        # т.к. в протоколе предусмотрена только установка IP-адреса
         if self.addrDialog.exec():
             try:
                 ip = self.addrDialog.addrLineEdit.text().split(':')[0]

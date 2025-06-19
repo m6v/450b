@@ -6,6 +6,12 @@ import struct
 
 ADMIN_PASSWORD_LENGTH = 12
 
+# Идентификаторы режимов
+WORK = 0x00      # работа
+CONTROL = 0x01   # контроль
+REGLAMENT = 0x02 # регламент
+KEYGEN = 0x03    # генерация ключей
+
 MTCR_GETCLOCK = 0x00000001
 MTCR_SETCLOCK = 0x00000002
 MTCR_CREATEINTERFACE = 0x00000007
@@ -171,9 +177,10 @@ def hexdump(data: bytes):
     offset = 0
     while offset < len(data):
         chunk = data[offset:offset + 16]
-        hex_values = chunk.hex(sep=' ')
+        hex_values = ' '.join(format(byte, '02x') for byte in chunk)
+        # В Python >= 3.8 можно использовать chunk.hex(sep=' ')
         ascii_values = ''.join(chr(byte) if 32 <= byte <= 126 else '.' for byte in chunk)
-        print(f'{offset:08x}  {hex_values:<48}  |{ascii_values}|')
+        print('{:08x}  {:<48}  |{}|'.format(offset, hex_values, ascii_values))
         offset += 16
 
 # Определить запросы, не требующие аргументов
@@ -257,13 +264,11 @@ def set_clock():
 def set_mode(mode, channel=1):
     '''Установка/изменение режима работы'''
     '''
-    Тип режима: 0х00 – работа
-                0х01 – контроль
-                0х02 – регламент
-                0х03 – режим генерации ключей
     NB! При переводе в режим контроля, возращается квитанция MTCA_FATAL_ERROR (0x0085),
     длина параметров 0х0004, параметры 0x1b000060 (то же значение, что и результат начального тестирования в квитанции MTCA_FIRSTSTATUS)
     '''
+    if mode < 0 or mode > 3:
+        raise Exception('Неправильный номер режима: %s' % mode)
     return struct.pack('>IIBB', MTCR_SETCHANNELMODE, 2,
                                 channel,
                                 mode)
@@ -405,4 +410,3 @@ def parse_reply(data, show_message):
             show_message(MTCA[reply.code])
         else:
             show_message('Неизвестная квитанция с кодом', reply.code)
-

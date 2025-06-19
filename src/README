@@ -1,18 +1,6 @@
-При попытке запуска с помощью pkexec получаем ошибку
-qt.qpa.xcb: could not connect to display 
-qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
-This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+NB!
+1) При использовании программы НЕ в ОС Astra Linux необходимо скопировать файл org.freedesktop.policykit.pkexec.policy в каталог /usr/share/polkit-1/actions), при этом в файле должен быть правильно указан путь к исполняемому файлу!
+см.: https://losst.pro/oshibka-cannot-open-display-linux
+2) Для просмотра отладочной информации в stdout запускать программу, используя sudo
 
-Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, wayland-egl, wayland, wayland-xcomposite-egl, wayland-xcomposite-glx, webgl, xcb.
-
-Aborted (core dumped)
-
-Альтернативный способ запуска с правами root'а использовать следующий скрипт (обязательно полный путь)
-#!/usr/bin/env sh
-pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /home/user/Workspace/450B/src/main.py
-
-NB! В некоторых источниках предлагается дополнительно устанавливать переменную XDG_RUNTIME_DIR=/tmp/runtime-root,
-но работает и без нее
-
-Вариант решения (не проверялся) см.:
-https://askubuntu.com/questions/288087/can-i-use-pkexec-in-a-python-script-or-a-desktop-file
+В функции set_address(self), выполняющей установку IP-адресов интерфейсов изделия не понятно как устанавливать маску сети и порт для внутреннего интерфейса управления, т.к. в протоколе предусмотрена только установка IP-адреса
