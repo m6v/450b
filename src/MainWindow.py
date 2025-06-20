@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
             action.triggered.connect(functools.partial(self.send_request, func()))
             self.requestsMenu.addAction(action)
         
-        # Создать элементы меню "Помощь"
+        # Создать элементы меню "Помощь", файлы справки должны быть в том же каталоге, что и исполняемые
         actions = {'Описание применения': 'manual.pdf',
                    'Временные правила пользования' : 'rules.pdf'}
         for name, fname in actions.items():
@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
         
     def show_doc(self, fname):
         '''Запустить ассоциированное внешнее приложение для просмотра справочного файла'''
-        process = subprocess.run(['xdg-open', fname])
+        process = subprocess.run(['xdg-open', os.path.join(os.path.dirname(__file__), fname)])
 
     def closeEvent(self, e):
         '''Сохранить геометрию, состояние главного окна и пароль'''
