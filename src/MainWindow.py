@@ -3,6 +3,7 @@ import functools
 import os
 import socket
 import struct
+import subprocess
 import random
 import time
 from threading import Thread
@@ -80,7 +81,7 @@ class MainWindow(QMainWindow):
         self.instruction_number = 0 # Порядковый номер инструкции, увеличивается на единицу после отправки команды
         
         # Статус изделия
-        self.mode = WORK 
+        self.mode = WORK
         
         self.settings.beginGroup('Common')
         self.host = self.settings.value('Host', '192.168.0.3')
@@ -102,6 +103,14 @@ class MainWindow(QMainWindow):
             action = QAction(name, self)
             action.triggered.connect(functools.partial(self.send_request, func()))
             self.requestsMenu.addAction(action)
+        
+        # Создать элементы меню "Помощь"
+        actions = {'Описание применения': 'manual.pdf',
+                   'Временные правила пользования' : 'rules.pdf'}
+        for name, fname in actions.items():
+            action = QAction(name, self)
+            action.triggered.connect(functools.partial(self.show_doc, fname))
+            self.helpMenu.addAction(action)
         
         # Настроить контекстое меню resultsPlainTextEdit
         self.resultsPlainTextEdit.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -144,11 +153,12 @@ class MainWindow(QMainWindow):
         self.resultsPlainTextEdit.appendPlainText(sep.join(str(x) for x in results))
 
     def process_reply(self, reply):
-        '''Вызов функции обработки квитанций с передачей ей функции вывода результатов обработки
-           Функция возвращает None или словарь с параметрами'''
+        '''Обработка квитанции'''
         if self.debug:
             print('Recieve')
             hexdump(reply)
+        # Вызов функции обработки квитанций с передачей ей функции вывода результатов обработки
+        # Функция возвращает None или словарь с параметрами
         result = parse_reply(reply, self.show_message)
         try:
             if result['mode'] is not None:
@@ -242,7 +252,7 @@ class MainWindow(QMainWindow):
                     self.settings.beginGroup('Common')
                     self.settings.setValue('Host', self.addrDialog.addrLineEdit.text())
                     self.settings.endGroup()
-                    QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу управления')
+                    QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу')
                 elif self.addrDialog.typeComboBox.currentIndex() == 1:
                     # Установка IP-адреса интерфейса ВВС изделия
                     self.send_request(set_address(INT_WAN, ip))
@@ -270,6 +280,10 @@ class MainWindow(QMainWindow):
         self.resultsPlainTextEdit.menu.addAction('Очистить все', self.resultsPlainTextEdit.clear)
         self.resultsPlainTextEdit.menu.exec_(QCursor.pos())
         
+    def show_doc(self, fname):
+        '''Запустить ассоциированное внешнее приложение для просмотра справочного файла'''
+        process = subprocess.run(['xdg-open', fname])
+
     def closeEvent(self, e):
         '''Сохранить геометрию, состояние главного окна и пароль'''
         self.settings.setValue('MainWindowGeometry', self.saveGeometry())
@@ -280,3 +294,5 @@ class MainWindow(QMainWindow):
         else:
             self.settings.setValue('Passwd', '')
         self.sock.close()
+
+

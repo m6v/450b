@@ -1,0 +1,69 @@
+NB!
+1) Для запуска программы с правами root НЕ в ОС Astra Linux используется программа pkexec которая является частью PolicyKit, которая позволяет более точно распределять права.
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY
+При использовании программы НЕ в ОС Astra Linux необходимо скопировать файл org.freedesktop.policykit.pkexec.policy в каталог /usr/share/polkit-1/actions), при этом в файле должен быть правильно указан путь к исполняемому файлу!
+см.: https://losst.pro/oshibka-cannot-open-display-linux
+2) Для просмотра отладочной информации в stdout запускать программу, используя sudo
+3) В функции set_address(self), выполняющей установку IP-адресов интерфейсов изделия не понятно как устанавливать маску сети и порт для внутреннего интерфейса управления, т.к. в протоколе предусмотрена только установка IP-адреса
+
+Запуск привилегированных приложений с pkexec (PolicyKit)
+
+Для приложений, которым требуется повышение привилегий вместо механизма sudo можно использовать pkexec, который  является частью PolicyKit.
+
+Для этого достаточно только описать разрешения приложения в отдельном 
+xml-конфиге.
+
+Например, для программы xed создадим файл /usr/share/polkit-1/actions/org.gnome.xed.policy
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+
+    <vendor>The Linux Mint Russian Community</vendor>
+    <vendor_url>https://linuxmint.com.ru/</vendor_url>
+    <icon_name>xed</icon_name>
+    <action id="org.gnome.xed">
+
+        <description gettext-domain="xed">Run xed as root</description>
+        <message gettext-domain="xed">Authentication is required to run the Xed Editor as root</message>
+        <defaults>
+            <allow_any>auth_admin</allow_any>
+            <allow_inactive>auth_admin</allow_inactive>
+            <allow_active>auth_admin</allow_active>
+        </defaults>
+        <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/xed</annotate>
+        <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+
+    </action>
+
+</policyconfig>
+
+Краткое пояснение по значениям полей блока <policyconfig>
+
+vendor - название разработчика программного обеспечения (вендора) или имя проекта (необязательный элемент).
+vendor_url - URL проекта или вендора (необязательный элемент).
+icon_name - имя значка, представляющего проект или вендора (необязательный элемент).
+action - это элемент, который содержит внутри себя другие элементы. В открывающем тэге action обязательно указывается идентификатор действия - id, который передается по шине D-Bus.
+Элементов action в одном файле может быть несколько. Внутри элемента action можно найти:
+description - краткое описание действия, понятное человеку. Элементов description может быть несколько, например, для разных языков.
+message - понятное оператору сообщение, которое будет появляться в окне запроса авторизации, если она потребуется. Элементов message может быть несколько, например, для разных языков.
+defaults - этот элемент определяет необходимость и тип авторизации по умолчанию для действия, указанного в элементе action.
+Здесь возможно использование трех необязательных элементов, определяющих неявные разрешения для клиентов, работающих в локальной консоли:
+allow_any - для любых клиентов;
+allow_inactive - для клиентов неактивных сеансов;
+allow_active - для клиентов активных сеансов;
+Элементы allow_any, allow_inactive и allow_active могут содержать следующие значения:
+no - действие не разрешается;
+yes - действие разрешается;
+auth_self - требуется аутентификация от имени владельца сеанса;
+auth_admin - требуется аутентификация от имени суперпользователя, что является более серьезным ограничением, чем предыдущий вариант;
+auth_self_keep - то же, что и auth_self, но разрешение имеет силу в течение некоторого небольшого периода времени (например, пять минут);
+auth_admin_keep - то же, что и auth_admin, но разрешение имеет силу в течение некоторого небольшого периода времени (например, пять минут);
+
+Несмотря на обилие строк в XML, по факту, для разных приложений, если не требуется настраивать тонкие политики - в данном шаблоне будут правиться только строкиaction id, description, message и exec.path
+
+Для запуска редактора с нужными правами достаточно выполнить pkexec 
+xed.
+
+Если же мы хотим разрешить пользователю запускать данный экземпляр софта вовсе без запроса пароля - то проставим поле <allow_active>yes</allow_active>, и программа будет запущена привилегированной сразу и без лишних вопросов. 
+

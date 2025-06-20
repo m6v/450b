@@ -106,6 +106,9 @@
     </property>
    </widget>
    <widget class="QMenu" name="keysMenu">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>Ключи</string>
     </property>
