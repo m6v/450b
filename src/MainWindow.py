@@ -1,6 +1,10 @@
 import binascii
+import configparser
 import functools
+import errno
+import json
 import os
+import pickle
 import socket
 import struct
 import subprocess
@@ -10,7 +14,7 @@ from threading import Thread
 from datetime import datetime
 
 from PyQt5 import uic
-from PyQt5.Qt import QMainWindow, QAction, QThread, QDateTime, QSettings, QCursor, QMessageBox, QCursor
+from PyQt5.Qt import QMainWindow, QAction, QThread, QDateTime, QCursor, QMessageBox, QCursor, QRect
 from PyQt5.QtCore import Qt, pyqtSignal
 
 from AddrDialog import AddrDialog
@@ -21,10 +25,9 @@ from SettingsDialog import SettingsDialog
 
 from protoproc import *
 
-DEBUG = True
-
+# os.path.realpath(), если не задан путь возвращает текущий каталог программы
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-SETTINGS_FILE = os.path.join(CURRENT_DIR, 'settings.ini')
+CONFIG_FILE = os.path.join(CURRENT_DIR, 'config.ini')
 
 
 class RecieverThread(QThread):
@@ -46,24 +49,28 @@ class MainWindow(QMainWindow):
         super().__init__()
         uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
         
-        self.settings = QSettings(SETTINGS_FILE, QSettings.IniFormat)
-        
         self.keyIdDialog = KeyIdDialog(self)
         self.keyParmsDialog = KeyParmsDialog(self)
         self.settingsDialog = SettingsDialog(self)
         self.passwdDialog = PasswdDialog(self)
         self.addrDialog = AddrDialog(self)
 
-        # Восстановить геометрию главного окна
-        geometry = self.settings.value('MainWindowGeometry')
-        if geometry:
-            self.restoreGeometry(geometry)
-        state = self.settings.value('MainWindowState')
-        if state:
-            self.restoreState(state)
+        self.config = configparser.ConfigParser(allow_no_value = True)
+        self.config.read(CONFIG_FILE)
+        
+        # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
+        self.debug = int(self.config.get('general', 'debug', fallback='0'))
 
+        # Разбить строку на элементы, преобразовать их в целые числа и получить QRect с геометрией главного окна
+        geometry = QRect(*map(int, self.config['window']['geometry'].split(';')))
+        # Восстановить геометрию главного окна
+        self.setGeometry(geometry)
+
+        state = int(self.config.get('window', 'state', fallback='0'))
+        self.restoreState(bytearray(state))
+        
         # Если пароль не хранится в настройках, запрашиваем его при запуске программы
-        self.passwd = self.settings.value('Passwd', '')
+        self.passwd = bytearray(self.config.get('general', 'passwd', fallback=''), 'utf-8')
         if not self.passwd:
             while True:
                 passwd = self.passwdDialog.exec()
@@ -71,9 +78,6 @@ class MainWindow(QMainWindow):
                     break
             self.passwd = bytearray(passwd, 'utf-8')
 
-        # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
-        self.debug = int(self.settings.value('Debug', 0))
-        
         hostname = socket.gethostname()
         # Подсчитать 16-разрядную контр. сумму от hostname и использовать ее в качестве идентификатора программы
         prg_id = binascii.crc_hqx(hostname.encode(), 0)
@@ -83,10 +87,8 @@ class MainWindow(QMainWindow):
         # Статус изделия
         self.mode = WORK
         
-        self.settings.beginGroup('Common')
-        self.host = self.settings.value('Host', '192.168.0.3')
-        self.port = int(self.settings.value('Port', '4660'))
-        self.settings.endGroup()
+        self.host = self.config.get('network', 'host', fallback='192.168.0.3')
+        self.port = int(self.config.get('network', 'port', fallback='4660'))
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.recieverThread = RecieverThread(self.sock)
@@ -104,19 +106,26 @@ class MainWindow(QMainWindow):
             action.triggered.connect(functools.partial(self.send_request, func()))
             self.requestsMenu.addAction(action)
         
-        # Создать элементы меню "Помощь", файлы справки должны быть в том же каталоге, что и исполняемые
-        actions = {'Описание применения': 'manual.pdf',
-                   'Временные правила пользования' : 'rules.pdf'}
+        # Создать элементы меню "Помощь", если путь не указан,
+        # то файлы справки должны быть в том же каталоге, что и исполняемые
+        actions = json.loads(self.config.get('actions', 'help'))
         for name, fname in actions.items():
-            action = QAction(name, self)
-            action.triggered.connect(functools.partial(self.show_doc, fname))
-            self.helpMenu.addAction(action)
-        
-        # Настроить контекстое меню resultsPlainTextEdit
+            try:
+                fname = os.path.realpath(fname)
+                if os.path.exists(fname):
+                    action = QAction(name, self)
+                    action.triggered.connect(functools.partial(self.show_doc, fname))
+                    self.helpMenu.addAction(action)
+                else:
+                    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), fname)
+            except FileNotFoundError as e:
+                print(e)
+
+         # Настроить контекстое меню resultsPlainTextEdit
         self.resultsPlainTextEdit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.resultsPlainTextEdit.customContextMenuRequested.connect(self.create_context_menu)
 
-        # Запросить текущмй режим, чтобы правильно выставить выпадающий список
+        # Запросить текущий режим, чтобы правильно выставить выпадающий список
         self.send_request(ask_mode())
         
         # Соединить сигналы и слоты
@@ -157,7 +166,7 @@ class MainWindow(QMainWindow):
         if self.debug:
             print('Recieve')
             hexdump(reply)
-        # Вызов функции обработки квитанций с передачей ей функции вывода результатов обработки
+        # Вызов функции обработки квитанций (второй параметр - функция вывода результатов обработки)
         # Функция возвращает None или словарь с параметрами
         result = parse_reply(reply, self.show_message)
         try:
@@ -249,14 +258,17 @@ class MainWindow(QMainWindow):
                 if self.addrDialog.typeComboBox.currentIndex() == 0:
                     # Установка IP-адреса интерфейса ЛВС изделия
                     self.send_request(set_address(INT_LAN, ip))
+                    '''
                     self.settings.beginGroup('Common')
                     self.settings.setValue('Host', self.addrDialog.addrLineEdit.text())
                     self.settings.endGroup()
+                    '''
                     QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу')
                 elif self.addrDialog.typeComboBox.currentIndex() == 1:
                     # Установка IP-адреса интерфейса ВВС изделия
                     self.send_request(set_address(INT_WAN, ip))
                 else:
+                    # Установка IP-адреса сервера асинхронных сообщений
                     port = int(self.addrDialog.addrLineEdit.text().split(':')[1])
                     self.send_request(set_address(EXT_ASINC_SRV, ip, port))
             except socket.error:
@@ -282,17 +294,23 @@ class MainWindow(QMainWindow):
         
     def show_doc(self, fname):
         '''Запустить ассоциированное внешнее приложение для просмотра справочного файла'''
-        process = subprocess.run(['xdg-open', os.path.join(os.path.dirname(__file__), fname)])
+        process = subprocess.run(['xdg-open', fname])
 
     def closeEvent(self, e):
         '''Сохранить геометрию, состояние главного окна и пароль'''
-        self.settings.setValue('MainWindowGeometry', self.saveGeometry())
-        self.settings.setValue('MainWindowState', self.saveState())
+        self.config.read(CONFIG_FILE)
+        # Получить кортеж с элементами QRect геометрии главного окна   
+        geometry = self.geometry().getRect()
+        # Преобразовать элементы кортежа в строки и разделить символом ';'
+        self.config.set('window', 'geometry', ';'.join(map(str, geometry)))
+        self.config.set('window', 'state', str(int(self.windowState())))
         # Если установлена опция "хранить пароль в настройках", сохранить его
         if self.settingsDialog.passwdPoliticComboBox.currentIndex():
-            self.settings.setValue('Passwd', self.passwd)
+            self.config.set('general', 'passwd', self.passwd.decode())
         else:
-            self.settings.setValue('Passwd', '')
-        self.sock.close()
+            self.config.set('general', 'passwd', '')
+        with open(CONFIG_FILE, 'w') as file:
+            self.config.write(file)
 
+        self.sock.close()
 
