@@ -20,10 +20,9 @@ class PasswdDialog(QDialog):
         self.showPassAction.setCheckable(True)
         self.showPassAction.toggled.connect(self.toggle_password_visibility)
         
-        # Здесь не используем, т.к. дублирует надпись над полем ввода
+        # Подсказку внутри поля ввода не используем, т.к. уже есть надпись над полем ввода
         # self.passwdLineEdit.setPlaceholderText('Введите пароль...')
         
-        # названия см.: https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QStyle.htm
         icon = self.style().standardIcon(getattr(QStyle, 'SP_DialogOkButton'))
         self.okPushButton.setIcon(icon)
         icon = self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton'))

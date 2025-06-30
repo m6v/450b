@@ -7,7 +7,6 @@ from PyQt5.Qt import QDialog
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.ini')
 
-# Password editing field, with Show/Hide toggle см.: https://www.pythonguis.com/widgets/passwordedit/
 
 class SettingsDialog(QDialog):
     """Диалоговое окно, отображающее настройки изделия и программы управления"""

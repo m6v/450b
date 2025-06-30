@@ -14,7 +14,6 @@ class KeyParmsDialog(QDialog):
         super().__init__(parent)
         uic.loadUi(os.path.join(CURRENT_DIR, 'KeyParmsDialog.ui'), self)
         
-        # TODO Проверить, возможно, что со строчными буквами не работает!
         validator = QRegularExpressionValidator(QRegularExpression('[A-Z,a-z,0-9]+'))
         self.keyIdLineEdit.setValidator(validator)
         

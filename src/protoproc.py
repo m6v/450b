@@ -276,7 +276,7 @@ def set_mode(mode, channel=1):
 def get_clock(reply, show_message):
     '''Обработка квитанции MTCA_CLOCK'''
     # В соответствии с протоколом код 0x00000001 имеют квитанции MTCA_CLOCK и MTCA_OK_MODE с длиной параметров 7 и 2 байта соответственно
-    # После установки режима вместо квитанции MTCA_OK_MODE приходи MTCA_OK
+    # После установки режима вместо квитанции MTCA_OK_MODE приходит MTCA_OK
     if reply.length == 7:
         S, M, H, w, d, m, y = struct.unpack('>BBBBBBB', reply.body)
         if y:
