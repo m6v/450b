@@ -106,12 +106,14 @@ class MainWindow(QMainWindow):
             action.triggered.connect(functools.partial(self.send_request, func()))
             self.requestsMenu.addAction(action)
         
-        # Создать элементы меню "Помощь", если путь не указан,
-        # то файлы справки должны быть в том же каталоге, что и исполняемые
+        # Создать элементы меню "Помощь", в соответствии со словарем help, указанном в файле настроек
+        # если путь не указан, то файлы справки должны быть в том же каталоге, что и исполняемые
         actions = json.loads(self.config.get('actions', 'help'))
         for name, fname in actions.items():
             try:
-                fname = os.path.realpath(fname)
+                # Если абсолютный путь файла справки не задан, пытаемся использовать каталог исполняемого файла
+                if not os.path.isabs(fname):
+                    fname = os.path.join(CURRENT_DIR, (fname))
                 if os.path.exists(fname):
                     action = QAction(name, self)
                     action.triggered.connect(functools.partial(self.show_doc, fname))

@@ -13,8 +13,7 @@ from PyQt5.Qt import QApplication
 from MainWindow import MainWindow
 
 if __name__ == '__main__':
-    if False:
-    # if os.getuid() != 0:
+    if os.getuid() != 0:
         # В Astra Linux использовать fly-su, в других ОС pkexec
         if os.path.isfile('/usr/bin/fly-su'):
             args = ['fly-su'] + [os.path.abspath(__file__)] + sys.argv
