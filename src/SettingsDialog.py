@@ -1,11 +1,16 @@
 import configparser
 import os
+import sys
 
 from PyQt5 import uic
 from PyQt5.Qt import QDialog
 
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.ini')
+INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+# При запуске упакованного исходника ресурсы, распаковываются во временный каталог,
+# указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
+if hasattr(sys, "_MEIPASS"):
+    INITIAL_DIR = os.path.dirname(sys.executable)
+CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
 
 
 class SettingsDialog(QDialog):

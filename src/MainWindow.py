@@ -26,17 +26,12 @@ from SettingsDialog import SettingsDialog
 
 from protoproc import *
 
-
-# Каталог в котором во время исполнения находятся файлы, добавленные с помощью опции --add-data, например, ui-файлы
-TEMPORARY_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Определить текущий путь в зависимости от того является приложение скомпонованным с помощью pyinstaller или нативным 
-if getattr(sys, 'frozen', False):
-    CURRENT_DIR = os.path.dirname(sys.executable)
-else:
-    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-CONFIG_FILE = os.path.join(CURRENT_DIR, 'config.ini')
+INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+# При запуске упакованного исходника ресурсы, распаковываются во временный каталог,
+# указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
+if hasattr(sys, "_MEIPASS"):
+    INITIAL_DIR = os.path.dirname(sys.executable)
+CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
 
 
 class RecieverThread(QThread):
@@ -56,8 +51,7 @@ class RecieverThread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        # uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
-        uic.loadUi(os.path.join(TEMPORARY_DIR, 'MainWindow.ui'), self)
+        uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
         
         self.keyIdDialog = KeyIdDialog(self)
         self.keyParmsDialog = KeyParmsDialog(self)
@@ -121,9 +115,9 @@ class MainWindow(QMainWindow):
         actions = json.loads(self.config.get('actions', 'help'))
         for name, fname in actions.items():
             try:
-                # Если абсолютный путь файла справки не задан, пытаемся использовать каталог исполняемого файла
+                # Если абсолютный путь файла справки не задан, пытаемся использовать исходный каталог исполняемого файла
                 if not os.path.isabs(fname):
-                    fname = os.path.join(CURRENT_DIR, (fname))
+                    fname = os.path.join(INITIAL_DIR, (fname))
                 if os.path.exists(fname):
                     action = QAction(name, self)
                     action.triggered.connect(functools.partial(self.show_doc, fname))
