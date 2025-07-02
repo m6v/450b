@@ -8,6 +8,7 @@ import pickle
 import socket
 import struct
 import subprocess
+import sys
 import random
 import time
 from threading import Thread
@@ -25,8 +26,16 @@ from SettingsDialog import SettingsDialog
 
 from protoproc import *
 
-# os.path.realpath(), если не задан путь возвращает текущий каталог программы
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+# Каталог в котором во время исполнения находятся файлы, добавленные с помощью опции --add-data, например, ui-файлы
+TEMPORARY_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Определить текущий путь в зависимости от того является приложение скомпонованным с помощью pyinstaller или нативным 
+if getattr(sys, 'frozen', False):
+    CURRENT_DIR = os.path.dirname(sys.executable)
+else:
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 CONFIG_FILE = os.path.join(CURRENT_DIR, 'config.ini')
 
 
@@ -47,7 +56,8 @@ class RecieverThread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
+        # uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
+        uic.loadUi(os.path.join(TEMPORARY_DIR, 'MainWindow.ui'), self)
         
         self.keyIdDialog = KeyIdDialog(self)
         self.keyParmsDialog = KeyParmsDialog(self)
