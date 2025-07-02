@@ -8,6 +8,7 @@ import pickle
 import socket
 import struct
 import subprocess
+import sys
 import random
 import time
 from threading import Thread
@@ -25,9 +26,12 @@ from SettingsDialog import SettingsDialog
 
 from protoproc import *
 
-# os.path.realpath(), если не задан путь возвращает текущий каталог программы
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = os.path.join(CURRENT_DIR, 'config.ini')
+INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+# При запуске упакованного исходника ресурсы, распаковываются во временный каталог,
+# указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
+if hasattr(sys, "_MEIPASS"):
+    INITIAL_DIR = os.path.dirname(sys.executable)
+CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
 
 
 class RecieverThread(QThread):
@@ -111,9 +115,9 @@ class MainWindow(QMainWindow):
         actions = json.loads(self.config.get('actions', 'help'))
         for name, fname in actions.items():
             try:
-                # Если абсолютный путь файла справки не задан, пытаемся использовать каталог исполняемого файла
+                # Если абсолютный путь файла справки не задан, пытаемся использовать исходный каталог исполняемого файла
                 if not os.path.isabs(fname):
-                    fname = os.path.join(CURRENT_DIR, (fname))
+                    fname = os.path.join(INITIAL_DIR, (fname))
                 if os.path.exists(fname):
                     action = QAction(name, self)
                     action.triggered.connect(functools.partial(self.show_doc, fname))
