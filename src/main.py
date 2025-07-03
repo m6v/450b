@@ -21,10 +21,9 @@ if __name__ == '__main__':
         INITIAL_DIR = os.path.dirname(sys.executable)
     else:
         INITIAL_DIR = os.path.dirname(os.path.realpath(__file__))
-    CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
     
     config = configparser.ConfigParser(allow_no_value = True)
-    config.read(CONFIG_FILE)
+    config.read(os.path.join(INITIAL_DIR, 'config.ini'))
     run_as_root = int(config.get('general', 'root', fallback='0'))
         
     if run_as_root and os.getuid() != 0:

@@ -27,11 +27,11 @@ from SettingsDialog import SettingsDialog
 from protoproc import *
 
 INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-# При запуске упакованного исходника ресурсы, распаковываются во временный каталог,
-# указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
+# При запуске упакованного исходника ресурсы, распаковываются во временный каталог, указанный в sys._MEIPASS
+# в этом случае путь к исходному каталогу взять из sys.executabl
 if hasattr(sys, "_MEIPASS"):
     INITIAL_DIR = os.path.dirname(sys.executable)
-CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
+configfile = os.path.join(INITIAL_DIR, 'config.ini')
 
 
 class RecieverThread(QThread):
@@ -48,6 +48,7 @@ class RecieverThread(QThread):
             addr = data[1]
             self.trigger.emit(reply)
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -60,7 +61,9 @@ class MainWindow(QMainWindow):
         self.addrDialog = AddrDialog(self)
 
         self.config = configparser.ConfigParser(allow_no_value = True)
-        self.config.read(CONFIG_FILE)
+        # Включить чувствительность ключей к регистру
+        self.config.optionxform = str
+        self.config.read(configfile)
         
         # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
         self.debug = int(self.config.get('general', 'debug', fallback='0'))
@@ -304,7 +307,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, e):
         '''Сохранить геометрию, состояние главного окна и пароль'''
-        self.config.read(CONFIG_FILE)
+        # self.config.read(configfile)
         # Получить кортеж с элементами QRect геометрии главного окна   
         geometry = self.geometry().getRect()
         # Преобразовать элементы кортежа в строки и разделить символом ';'
@@ -315,7 +318,7 @@ class MainWindow(QMainWindow):
             self.config.set('general', 'passwd', self.passwd.decode())
         else:
             self.config.set('general', 'passwd', '')
-        with open(CONFIG_FILE, 'w') as file:
+        with open(configfile, 'w') as file:
             self.config.write(file)
 
         self.sock.close()

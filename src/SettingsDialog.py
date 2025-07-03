@@ -10,7 +10,7 @@ INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 # указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
 if hasattr(sys, "_MEIPASS"):
     INITIAL_DIR = os.path.dirname(sys.executable)
-CONFIG_FILE = os.path.join(INITIAL_DIR, 'config.ini')
+configfile = os.path.join(INITIAL_DIR, 'config.ini')
 
 
 class SettingsDialog(QDialog):
@@ -20,7 +20,7 @@ class SettingsDialog(QDialog):
         uic.loadUi(os.path.join(CURRENT_DIR, 'SettingsDialog.ui'), self)
 
         self.config = configparser.ConfigParser(allow_no_value = True)
-        self.config.read(CONFIG_FILE)
+        self.config.read(configfile)
         
         # Эту установку выполняем в конструкторе, иначе, если не открывать окно настроек,
         # дефолтное значение будет 0 и при закрытии основного окна, пароль не сохранится
@@ -39,7 +39,7 @@ class SettingsDialog(QDialog):
     def accept(self):
         self.config.set('network', 'host', self.devAddrLineEdit.text())
         self.config.set('network', 'port', str(self.devPortSpinBox.value()))
-        with open(CONFIG_FILE, 'w') as file:
+        with open(configfile, 'w') as file:
             self.config.write(file)
 
         super().accept()
