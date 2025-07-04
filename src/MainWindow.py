@@ -27,7 +27,7 @@ from SettingsDialog import SettingsDialog
 from protoproc import *
 
 INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-# При запуске упакованного исходника ресурсы, распаковываются во временный каталог, указанный в sys._MEIPASS
+# При запуске упакованного исходника ресурсы распаковываются во временный каталог, который указывается в sys._MEIPASS
 # в этом случае путь к исходному каталогу взять из sys.executabl
 if hasattr(sys, "_MEIPASS"):
     INITIAL_DIR = os.path.dirname(sys.executable)
@@ -59,22 +59,25 @@ class MainWindow(QMainWindow):
         self.config.optionxform = str
         self.config.read(configfile)
         
+        # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
+        self.debug = int(self.config.get('general', 'debug', fallback='0'))
+
+        try:
+            # Разбить строку на элементы, преобразовать их в целые числа и получить QRect с геометрией главного окна
+            geometry = QRect(*map(int, self.config.get('window', 'geometry').split(';')))
+            # Восстановить геометрию главного окна
+            self.setGeometry(geometry)
+
+            state = int(self.config.get('window', 'state'))
+            self.restoreState(bytearray(state))
+        except configparser.NoOptionError as e:
+            print(e)
+        
         self.keyIdDialog = KeyIdDialog(self)
         self.keyParmsDialog = KeyParmsDialog(self)
         self.settingsDialog = SettingsDialog(self, self.config)
         self.passwdDialog = PasswdDialog(self)
-        self.addrDialog = AddrDialog(self)
-        
-        # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
-        self.debug = int(self.config.get('general', 'debug', fallback='0'))
-
-        # Разбить строку на элементы, преобразовать их в целые числа и получить QRect с геометрией главного окна
-        geometry = QRect(*map(int, self.config['window']['geometry'].split(';')))
-        # Восстановить геометрию главного окна
-        self.setGeometry(geometry)
-
-        state = int(self.config.get('window', 'state', fallback='0'))
-        self.restoreState(bytearray(state))
+        self.addrDialog = AddrDialog(self)        
         
         # Если пароль не хранится в настройках, запрашиваем его при запуске программы
         self.passwd = bytearray(self.config.get('general', 'passwd', fallback=''), 'utf-8')
@@ -113,22 +116,25 @@ class MainWindow(QMainWindow):
             action.triggered.connect(functools.partial(self.send_request, func()))
             self.requestsMenu.addAction(action)
         
-        # Создать элементы меню "Помощь", в соответствии со словарем help, указанном в файле настроек
-        # если путь не указан, то файлы справки должны быть в том же каталоге, что и исполняемые
-        actions = json.loads(self.config.get('actions', 'help'))
-        for name, fname in actions.items():
-            try:
-                # Если абсолютный путь файла справки не задан, пытаемся использовать исходный каталог исполняемого файла
-                if not os.path.isabs(fname):
-                    fname = os.path.join(INITIAL_DIR, (fname))
-                if os.path.exists(fname):
-                    action = QAction(name, self)
-                    action.triggered.connect(functools.partial(self.show_doc, fname))
-                    self.helpMenu.addAction(action)
-                else:
-                    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), fname)
-            except FileNotFoundError as e:
-                print(e)
+        try:
+            # Создать элементы меню "Помощь", в соответствии со словарем help, указанном в файле настроек
+            # если путь не указан, то файлы справки должны быть в том же каталоге, что и исполняемые
+            actions = json.loads(self.config.get('actions', 'help'))
+            for name, fname in actions.items():
+                try:
+                    # Если абсолютный путь файла справки не задан, пытаемся использовать исходный каталог исполняемого файла
+                    if not os.path.isabs(fname):
+                        fname = os.path.join(INITIAL_DIR, (fname))
+                    if os.path.exists(fname):
+                        action = QAction(name, self)
+                        action.triggered.connect(functools.partial(self.show_doc, fname))
+                        self.helpMenu.addAction(action)
+                    else:
+                        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), fname)
+                except FileNotFoundError as e:
+                    print(e)
+        except configparser.NoOptionError as e:
+            print(e)
 
          # Настроить контекстое меню resultsPlainTextEdit
         self.resultsPlainTextEdit.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -260,30 +266,32 @@ class MainWindow(QMainWindow):
 
     def set_address(self):
         '''Установка IP-адресов интерфейсов изделия'''
-        if self.addrDialog.exec():
-            try:
-                ip = self.addrDialog.addrLineEdit.text().split(':')[0]
-                socket.inet_aton(ip)
-                if self.addrDialog.typeComboBox.currentIndex() == 0:
-                    # Установка IP-адреса интерфейса ЛВС изделия
-                    self.send_request(set_address(INT_LAN, ip))
-                    '''
-                    self.settings.beginGroup('Common')
-                    self.settings.setValue('Host', self.addrDialog.addrLineEdit.text())
-                    self.settings.endGroup()
-                    '''
-                    QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу')
-                elif self.addrDialog.typeComboBox.currentIndex() == 1:
-                    # Установка IP-адреса интерфейса ВВС изделия
-                    self.send_request(set_address(INT_WAN, ip))
-                else:
-                    # Установка IP-адреса сервера асинхронных сообщений
-                    port = int(self.addrDialog.addrLineEdit.text().split(':')[1])
-                    self.send_request(set_address(EXT_ASINC_SRV, ip, port))
-            except socket.error:
-                QMessageBox.critical(self, 'Ошибка', 'Введен неправильный ip-адрес')
-            except (IndexError, ValueError):
-                QMessageBox.critical(self, 'Ошибка', 'Не введен или введен неправильный номер порта')
+        iface = self.addrDialog.exec()
+        # Здесь сравниваем именно с False, т.к. iface может принимать и нулевое значение
+        if iface is False:
+            return
+        try:
+            ip = self.addrDialog.ip
+            socket.inet_aton(ip)
+            if iface == INT_LAN:
+                # Установка IP-адреса интерфейса ЛВС изделия
+                self.send_request(set_address(INT_LAN, ip))
+                self.host = ip
+                self.config.set('network', 'host', ip)
+                QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу')
+            elif iface == INT_WAN:
+                # Установка IP-адреса интерфейса ВВС изделия
+                self.send_request(set_address(INT_WAN, ip))
+            elif iface == EXT_ASINC_SRV:
+                # Установка IP-адреса сервера асинхронных сообщений
+                port = int(self.addrDialog.port)
+                self.send_request(set_address(EXT_ASINC_SRV, ip, port))
+            else:
+                raise ValueError("Неправильный идентификатор интерфейса")
+        except socket.error:
+            QMessageBox.critical(self, 'Ошибка', 'Введен неправильный ip-адрес')
+        except (IndexError, ValueError):
+            QMessageBox.critical(self, 'Ошибка', 'Не введен или введен неправильный номер порта')
 
     def reset_all(self):
         '''Отправить запрос на сброс устройства'''

@@ -23,15 +23,16 @@ class AddrDialog(QDialog):
         icon = self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton'))
         self.cancelPushButton.setIcon(icon)
         
-        for item in IFACES:
-            self.typeComboBox.addItem(IFACES[item])
+        for key in IFACES:
+            # В itemData добавляем идентификатор интерфейса (key)
+            self.typeComboBox.addItem(IFACES[key], key)
         
         self.typeComboBox.currentIndexChanged.connect(self.iface_type_changed)
         self.addrLineEdit.textChanged[str].connect(self.addr_changed)
         
     def iface_type_changed(self, index):
         self.addrLineEdit.setText('')
-        if index == 2:
+        if self.typeComboBox.itemData(index) == EXT_ASINC_SRV:
             self.addrLabel.setText('Адрес:порт')
         else:
             self.addrLabel.setText('Адрес')
@@ -43,9 +44,24 @@ class AddrDialog(QDialog):
                 self.okPushButton.setEnabled(True)
         except:
             self.okPushButton.setEnabled(False)
-
+            
+    def exec(self):
+        '''Вернуть идентификатор выбранного интерфейса, если нажата кнопка "Ок", иначе False'''
+        return self.typeComboBox.itemData(self.typeComboBox.currentIndex()) if super().exec() else False
 
     def showEvent(self, e):
         self.addrLineEdit.setText('')
         super().showEvent(e)
         self.update()
+
+    def get_ip(self):
+        return self.addrLineEdit.text().split(':')[0]
+    
+    def get_port(self):
+        try:
+            return self.addrLineEdit.text().split(':')[1]
+        except IndexError:
+            return 0
+    
+    ip = property(get_ip)
+    port = property(get_port)

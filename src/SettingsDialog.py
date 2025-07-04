@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt5 import uic
-from PyQt5.Qt import QDialog
+from PyQt5.Qt import QDialog, QMessageBox
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -32,6 +32,7 @@ class SettingsDialog(QDialog):
         self.config.set('network', 'host', self.devAddrLineEdit.text())
         self.config.set('network', 'port', str(self.devPortSpinBox.value()))
         super().accept()
+        QMessageBox.warning(self, 'Предупреждение', 'Для вступления изменений в силу, перезапустите программу')
 
     def get_passwd_store_politic(self):
         ''' Вернуть политику хранения паролей'''
