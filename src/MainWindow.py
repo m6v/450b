@@ -53,17 +53,17 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
-        
-        self.keyIdDialog = KeyIdDialog(self)
-        self.keyParmsDialog = KeyParmsDialog(self)
-        self.settingsDialog = SettingsDialog(self)
-        self.passwdDialog = PasswdDialog(self)
-        self.addrDialog = AddrDialog(self)
 
         self.config = configparser.ConfigParser(allow_no_value = True)
         # Включить чувствительность ключей к регистру
         self.config.optionxform = str
         self.config.read(configfile)
+        
+        self.keyIdDialog = KeyIdDialog(self)
+        self.keyParmsDialog = KeyParmsDialog(self)
+        self.settingsDialog = SettingsDialog(self, self.config)
+        self.passwdDialog = PasswdDialog(self)
+        self.addrDialog = AddrDialog(self)
         
         # Параметр включения режима отладки (вывод дампов отправляемых запросов и принимаемых квитанций в stdout)
         self.debug = int(self.config.get('general', 'debug', fallback='0'))
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
         self.config.set('window', 'geometry', ';'.join(map(str, geometry)))
         self.config.set('window', 'state', str(int(self.windowState())))
         # Если установлена опция "хранить пароль в настройках", сохранить его
-        if self.settingsDialog.passwdPoliticComboBox.currentIndex():
+        if self.settingsDialog.get_passwd_store_politic():
             self.config.set('general', 'passwd', self.passwd.decode())
         else:
             self.config.set('general', 'passwd', '')
