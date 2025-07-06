@@ -1,4 +1,3 @@
-import binascii
 from collections import namedtuple
 from datetime import datetime
 import socket
@@ -7,10 +6,10 @@ import struct
 ADMIN_PASSWORD_LENGTH = 12
 
 # Идентификаторы режимов
-WORK = 0x00      # работа
-CONTROL = 0x01   # контроль
-REGLAMENT = 0x02 # регламент
-KEYGEN = 0x03    # генерация ключей
+WORK = 0x00       # работа
+CONTROL = 0x01    # контроль
+REGLAMENT = 0x02  # регламент
+KEYGEN = 0x03     # генерация ключей
 
 MTCR_GETCLOCK = 0x00000001
 MTCR_SETCLOCK = 0x00000002
@@ -37,32 +36,32 @@ MTCR = {MTCR_GETCLOCK: 'Запрос текущего времени',
         MTCR_SETCHANNELMODE: 'Установка/изменение режима работы СКЗИ',
         MTCR_ZASCOMMAND: 'Регламентные работы',
         MTCR_КМCOMMAND: 'Запрос общей статистики'
-       }
+        }
 
 ZAS_FL_COMMAND = 0x02
 ZAS_REGIME_COMMAND = 0x03
 
-ZAS_FL_ERASE_KEY = 0x02 # Стирание ключа в СКЗИ
-ZAS_FL_RESET_ALL = 0x03 # Сброс изделия в начальное заводское состояние
-ZAS_FL_INPUT_KEY = 0x05 # Ввод ключа в СКЗИ с внешнего ключевого носителя или из зоны хранения ключей
-ZAS_FL_GET_KEYS = 0x06  # Запрос информации о ключах в рабочей области
-ZAS_FL_GET_KEYS_STORAGE = 0x16 # Запрос информации о ключах в области хранения ключей
-ZAS_FL_GENERATION_KEY_NOISE = 0x17 # Генерация ключа с заданными параметрами из шума (в особых условиях)
-ZAS_FL_OUTPUT_KEY = 0x18 # Вывод ключа из СКЗИ на внешний ключевой носитель
-ZAS_FL_NOISE_KEYS_NUMBER = 0x18 # Запрос информации о возможном количестве генерируемых ключей
-ZAS_FL_ERASE_FIELD = 0x55 # Стирание ключей в зоне хранения ключей
+ZAS_FL_ERASE_KEY = 0x02  # Стирание ключа в СКЗИ
+ZAS_FL_RESET_ALL = 0x03  # Сброс изделия в начальное заводское состояние
+ZAS_FL_INPUT_KEY = 0x05  # Ввод ключа в СКЗИ с внешнего ключевого носителя или из зоны хранения ключей
+ZAS_FL_GET_KEYS = 0x06   # Запрос информации о ключах в рабочей области
+ZAS_FL_GET_KEYS_STORAGE = 0x16  # Запрос информации о ключах в области хранения ключей
+ZAS_FL_GENERATION_KEY_NOISE = 0x17  # Генерация ключа с заданными параметрами из шума (в особых условиях)
+ZAS_FL_OUTPUT_KEY = 0x18  # Вывод ключа из СКЗИ на внешний ключевой носитель
+ZAS_FL_NOISE_KEYS_NUMBER = 0x18  # Запрос информации о возможном количестве генерируемых ключей
+ZAS_FL_ERASE_FIELD = 0x55  # Стирание ключей в зоне хранения ключей
 
 MTCA_OK = 0x00000000
 MTCA_OK_MODE = 0x00000001
 MTCA_CLOCK = 0x00000001
-MTCA_ASYNADDRESS = 0x00000007 # в документации не описана
+MTCA_ASYNADDRESS = 0x00000007  # в документации не описана
 MTCA_CRC = 0x00000008
 MTCA_FIRSTSTATUS = 0x00000009
 MTCA_HEALTH_STATUS = 0x0000000B
 MTCA_ERROR_TIME = 0x00000080
 MTCA_INVALIDPACKET = 0x00000083
 MTCA_ERROR_INVAL = 0x00000084
-MTCA_FATAL_ERROR =0x00000085
+MTCA_FATAL_ERROR = 0x00000085
 MTCA_ACCESSDENIED = 0x00000086
 MTCA_ERROR_ZAS = 0x0000008A
 MTCA_ZASCOMMAND = 0x000000A0
@@ -81,7 +80,7 @@ MTCA = {MTCA_OK: 'Успешное выполнение команды',
         MTCA_ACCESSDENIED: 'Отказ в доступе',
         MTCA_ERROR_ZAS: 'Ошибка при работе с ключевым устройством',
         MTCA_ZASCOMMAND: 'Команда выполнена'
-       }
+        }
 
 FL_STATUS_OK = 0x00
 FL_STATUS_GET_KEYS_OK = 0x08
@@ -108,7 +107,7 @@ FL_STATUS = {FL_STATUS_OK: 'Успешное завершение операци
              FL_STATUS_KEY_NOT_FOUND: 'Поиск ключа завершился неудачей',
              FL_STATUS_GET_KEYS_STORAGE_OK: 'Результат чтения состояния ключевых зон из области хранения ключей «Уступ»',
              FL_STATUS_NOISE_KEYS_NUMBER: 'Возможное количество генерируемых ключей'
-            }
+             }
 
 KM_CMD_GET_PUBLIC_STATISTIC = 0xCB
 
@@ -120,7 +119,7 @@ RGM_STATUS_NO_INIT_KEY = 0x0F
 RGM_STATUS_NO_KEY = 0x04
 RGM_STATUS_SELFTEST_ERROR = 0x09
 RGM_STATUS_INACCESSIBLE_COMMAND = 0x0A
-RGM_STATUS_UNDEFINED_PACKET = 0x08 # Одинаковый код с RGM_STATUS_UNDEFINED_COMMAND
+RGM_STATUS_UNDEFINED_PACKET = 0x08  # Одинаковый код с RGM_STATUS_UNDEFINED_COMMAND
 
 RGM_STATUS = {ZAS_GET_TIME: 'Команда не выполнена, т.к. в изделии не установлено время',
               RGM_STATUS_INCORRECT_KEY_ZONE: 'Задан недопустимый идентификатор  ключа',
@@ -131,30 +130,31 @@ RGM_STATUS = {ZAS_GET_TIME: 'Команда не выполнена, т.к. в �
               RGM_STATUS_SELFTEST_ERROR: 'Команда не выполнена, т.к. была обнаружена ошибка при тестировании СКЗИ',
               RGM_STATUS_INACCESSIBLE_COMMAND: 'Команда не доступна в текущем режиме работы, перевести изделие в режим «Регламент»',
               RGM_STATUS_UNDEFINED_PACKET: 'СКЗИ получило непредусмотренный  пакет'
-             }
+              }
 
 KEYS_STORAGE = 0x0001
 KEYS_RADIO = 0x0002
 
-INT_LAN = 0x06 # интерфейс Ethernet ЛВС
-INT_WAN = 0x09 # интерфейс Ethernet ВВС
-INT_SLIP_L = 0x28 # интерфейс SLIP локальный
-INT_SLIP_W = 0x31 # интерфейс SLIP внешний
-EXT_ASINC_SRV = 0x00 # интерфейс сервера асинхронных сообщений
+INT_LAN = 0x06        # интерфейс Ethernet ЛВС
+INT_WAN = 0x09        # интерфейс Ethernet ВВС
+INT_SLIP_L = 0x28     # интерфейс SLIP локальный
+INT_SLIP_W = 0x31     # интерфейс SLIP внешний
+EXT_ASINC_SRV = 0x00  # интерфейс сервера асинхронных сообщений
 
 IFACES = {INT_LAN: 'Ethernet ЛВС',
           INT_WAN: 'Ethernet ВВС',
-          EXT_ASINC_SRV: 'Сервер асинхронных сообщений'}
+          EXT_ASINC_SRV: 'Сервер асинхронных сообщений'
+          }
 
-SPS_KEY_TTL_DAYS_1 = 0x31 # символ '1' в КОИ-7
-SPS_KEY_TTL_DAYS_16 = 0x70 # символ 'П' в КОИ-7
-SPS_KEY_TTL_MONTHS_1 = 0x71 # символ 'Я' в КОИ-7
-SPS_KEY_TTL_MONTHS_3 = 0x73 # символ 'С' в КОИ-7
-SPS_KEY_TTL_MONTHS_6 = 0x76 # символ 'Ж' в КОИ-7
-SPS_KEY_TTL_YEARS_1 = 0x21 # символ '!' в КОИ-7
+SPS_KEY_TTL_DAYS_1 = 0x31    # символ '1' в КОИ-7
+SPS_KEY_TTL_DAYS_16 = 0x70   # символ 'П' в КОИ-7
+SPS_KEY_TTL_MONTHS_1 = 0x71  # символ 'Я' в КОИ-7
+SPS_KEY_TTL_MONTHS_3 = 0x73  # символ 'С' в КОИ-7
+SPS_KEY_TTL_MONTHS_6 = 0x76  # символ 'Ж' в КОИ-7
+SPS_KEY_TTL_YEARS_1 = 0x21   # символ '!' в КОИ-7
 
-SPS_KEY_PERIOD_DAYS_1 = 0x31 # символ '1' в КОИ-7
-SPS_KEY_PERIOD_DAYS_16 = 0x70 # символ 'П' в КОИ-7
+SPS_KEY_PERIOD_DAYS_1 = 0x31   # символ '1' в КОИ-7
+SPS_KEY_PERIOD_DAYS_16 = 0x70  # символ 'П' в КОИ-7
 
 KEY_ALGORITHM = {0xC5: 'Уступ', 0x1A: 'R-168'}
 
@@ -164,14 +164,15 @@ SPS_KEY_TTL = {SPS_KEY_TTL_DAYS_1: '1 день',
                SPS_KEY_TTL_MONTHS_3: '3 месяца',
                SPS_KEY_TTL_MONTHS_6: '6 месяцев',
                SPS_KEY_TTL_YEARS_1: '1 год'
-              }
+               }
 
 SPS_KEY_PERIOD = {SPS_KEY_PERIOD_DAYS_1: '1 день',
                   SPS_KEY_PERIOD_DAYS_16: '16 дней'
-                 }
-                  
+                  }
+
 Reply = namedtuple('Reply', ['code', 'length', 'body'])
 Key = namedtuple('Key', ['id', 'zone', 'number', 'date', 'ttl', 'period'])
+
 
 def hexdump(data: bytes):
     offset = 0
@@ -183,17 +184,55 @@ def hexdump(data: bytes):
         print('{:08x}  {:<48}  |{}|'.format(offset, hex_values, ascii_values))
         offset += 16
 
-# Определить запросы, не требующие аргументов
-ask_asynaddress = lambda : struct.pack('>II', MTCR_GETASYNADDRESS, 0) # запросить адрес сервера асинхронных сообщений
-ask_clock = lambda : struct.pack('>II', MTCR_GETCLOCK, 0) # запросить время
-ask_crc = lambda : struct.pack('>II', MTCR_GETCRC, 0) # запросить контрольную сумму ПО
-ask_first_status = lambda : struct.pack('>II', MTCR_GETFIRSTSTATUS, 0) # запросить статус первоначального тестирования
-ask_mode = lambda : struct.pack('>II', MTCR_GET_HEALTH_STATUS, 0) # запросить состояние (режим) изделия
-ask_keys_workspace = lambda : struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_GET_KEYS) # запросить информацию о ключах в рабочей области
-ask_keys_storage = lambda : struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_GET_KEYS_STORAGE) # запросить информацию о ключах в области хранения ключей
-ask_keys_number = lambda : struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_NOISE_KEYS_NUMBER) # запросить информацию о возможном количестве генерируемых ключей
-erase_field = lambda : struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_ERASE_FIELD) # стереть зону хранения ключей ключевого устройства
-reset_all = lambda : struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_RESET_ALL) # сбросить устройство в начальное состояние
+
+def ask_asynaddress():
+    '''Запросить адрес сервера асинхронных сообщений'''
+    return struct.pack('>II', MTCR_GETASYNADDRESS, 0)
+
+
+def ask_clock():
+    '''Запросить время'''
+    return struct.pack('>II', MTCR_GETCLOCK, 0)
+    
+    
+def ask_crc():
+    '''Запросить контрольную сумму ПО'''
+    return struct.pack('>II', MTCR_GETCRC, 0)
+
+
+def ask_first_status():
+    '''Запросить статус первоначального тестирования'''
+    return struct.pack('>II', MTCR_GETFIRSTSTATUS, 0)
+
+
+def ask_mode():
+    '''Запросить состояние (режим) изделия'''
+    return struct.pack('>II', MTCR_GET_HEALTH_STATUS, 0)
+
+
+def ask_keys_workspace():
+    '''Запросить информацию о ключах в рабочей области'''
+    return struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_GET_KEYS)
+
+def ask_keys_storage():
+    '''Запросить информацию о ключах в области хранения ключей'''
+    return struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_GET_KEYS_STORAGE)
+
+
+def ask_keys_number():
+    '''Запросить информацию о возможном количестве генерируемых ключей'''
+    return struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_NOISE_KEYS_NUMBER)
+
+
+def erase_field():
+    '''Стереть зону хранения ключей ключевого устройства'''
+    return struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_ERASE_FIELD)
+
+
+def reset_all():
+    '''Сбросить устройство в начальное состояние'''
+    return struct.pack('>IIBB', MTCR_ZASCOMMAND, 2, ZAS_FL_COMMAND, ZAS_FL_RESET_ALL)
+
 
 def input_key(key_id, key_zone=0):
     '''Ввод ключа с внешнего ключевого носителя'''
@@ -203,6 +242,7 @@ def input_key(key_id, key_zone=0):
                                    key_zone,
                                    key_id.encode())
 
+
 def erase_key(key_id, key_zone=0):
     '''Стирание ключа'''
     return struct.pack('>IIBBB4s', MTCR_ZASCOMMAND, 7,
@@ -211,6 +251,7 @@ def erase_key(key_id, key_zone=0):
                                    key_zone,
                                    key_id.encode())
 
+
 def output_key(key_id, key_zone=0):
     '''Вывод ключа на внешний ключевой носитель'''
     return struct.pack('>IIBBB4s', MTCR_ZASCOMMAND, 7,
@@ -218,6 +259,7 @@ def output_key(key_id, key_zone=0):
                                    ZAS_FL_OUTPUT_KEY,
                                    key_zone,
                                    key_id.encode())
+
 
 def gen_key(key: Key):
     '''Генерация ключа'''
@@ -234,10 +276,12 @@ def gen_key(key: Key):
                                           key.ttl,
                                           key.period)
 
+
 def set_admin_password(admin_passwd, new_passwd):
     '''Смена административного пароля'''
     # Если пароли меньше 12 символов, они автоматически дополняются нулями справа
     return struct.pack('>II12s12s', MTCR_SET_ADMIN_PASSWORD, 24, admin_passwd, new_passwd)
+
 
 def set_address(iface_type, ip, port=0, mask='0.0.0.24', channel=0):
     '''Установка ip-адресов интерфейсов изделия и ip-адреса сервера асинхронных сообщений'''
@@ -249,6 +293,7 @@ def set_address(iface_type, ip, port=0, mask='0.0.0.24', channel=0):
         return struct.pack('>II4s4sH', MTCR_SETASYNADDRESS, 10, socket.inet_aton(ip), socket.inet_aton(mask), port)
     raise Exception('Неизвестный тип интерфейса:', iface_type)
 
+
 def set_clock():
     '''Установка времени'''
     now = datetime.now()
@@ -256,10 +301,11 @@ def set_clock():
                                      now.second,
                                      now.minute,
                                      now.hour,
-                                     now.weekday()+1,
+                                     now.weekday() + 1,
                                      now.day,
                                      now.month,
-                                     now.year-2000)
+                                     now.year - 2000)
+
 
 def set_mode(mode, channel=1):
     '''Установка/изменение режима работы'''
@@ -273,6 +319,7 @@ def set_mode(mode, channel=1):
                                 channel,
                                 mode)
 
+
 def get_clock(reply, show_message):
     '''Обработка квитанции MTCA_CLOCK'''
     # В соответствии с протоколом код 0x00000001 имеют квитанции MTCA_CLOCK и MTCA_OK_MODE с длиной параметров 7 и 2 байта соответственно
@@ -280,7 +327,7 @@ def get_clock(reply, show_message):
     if reply.length == 7:
         S, M, H, w, d, m, y = struct.unpack('>BBBBBBB', reply.body)
         if y:
-            dt = datetime(y+2000, m, d, H, M, S)
+            dt = datetime(y + 2000, m, d, H, M, S)
             show_message('Время в изделии:', dt)
         else:
             show_message('Время в изделии не установлено')
@@ -289,15 +336,18 @@ def get_clock(reply, show_message):
         show_message('Номер канала:', reply.body[0])
         show_message('Статус изделия:', reply.body[1])
 
+
 def get_crc(reply, show_message):
     '''Обработка квитанции MTCA_CRC о проверке целостности ПО'''
     show_message('Контрольная сумма ПО:', reply.body.hex())
+
 
 def get_health_status(reply, show_message):
     '''Обработка квитанции MTCA_HEALTH_STATUS о текущем статусе изделия'''
     modes = ('работа (0x00)', 'контроль (0x01)', 'регламент (0x02)', 'генерация ключей (0x03)')
     show_message('Статус изделия:', modes[reply.body[0]])
     return {'mode': reply.body[0]}
+
 
 def get_first_status(reply, show_message):
     '''Обработка квитанции MTCA_FIRSTSTATUS о статусе первоначального тестирования и версии ПО'''
@@ -312,6 +362,7 @@ def get_first_status(reply, show_message):
     show_message('Номер изделия:', device_number)
     # Оставшаяся опциональная часть это комментарий (может не заканчиваться нулем или отсутствовать)
 
+
 def get_error_zas(reply, show_message):
     '''Обработка квитанции MTCA_ERROR_ZAS об ошибке при управлении режимом'''
     if reply.body[0] == ZAS_REGIME_COMMAND:
@@ -320,6 +371,7 @@ def get_error_zas(reply, show_message):
         show_message(FL_STATUS[reply.body[1]])
     else:
         show_message(MTCA[MTCA_ERROR_ZAS])
+
 
 def get_zas_command(reply, show_message):
     '''Обработка квитанций MTCA_ZASCOMMAND об успешном завершении операции'''
@@ -331,43 +383,43 @@ def get_zas_command(reply, show_message):
     elif operation_result == FL_STATUS_GET_KEYS_OK:
         # длина структуры SPS_KEY_STATUS
         SPS_KEY_STATUS_LEN = 37
-        for i in range((reply.length-2)//SPS_KEY_STATUS_LEN):
+        for i in range((reply.length - 2) // SPS_KEY_STATUS_LEN):
             keys = ('key_zone', 'key_id', 'key_input_to_activation', 'key_type', 'key_ttl', 'key_period', 'key_algorithm', 'key_number', 'key_input_to_device', 'key_input_to_work')
-            values = struct.unpack('>B4s3sBBBB13s6s6s', reply.body[2+i*SPS_KEY_STATUS_LEN:2+(i+1)*SPS_KEY_STATUS_LEN])
+            values = struct.unpack('>B4s3sBBBB13s6s6s', reply.body[2 + i * SPS_KEY_STATUS_LEN:2 + (i + 1) * SPS_KEY_STATUS_LEN])
             SPS_KEY_STATUS = dict(zip(keys, values))
             show_message('Идентификатор ключа:', SPS_KEY_STATUS['key_id'].decode())
             show_message('Учетный номер ключа:', SPS_KEY_STATUS['key_number'].decode())
             show_message('Номер ключевой зоны:', SPS_KEY_STATUS['key_zone'])
             show_message('Тип ключа:', SPS_KEY_STATUS['key_type'])
             show_message('Алгоритм ключа:', KEY_ALGORITHM[SPS_KEY_STATUS['key_algorithm']])
-            show_message('Дата ввода ключа в действие:', datetime(SPS_KEY_STATUS['key_input_to_activation'][2]+2000,
+            show_message('Дата ввода ключа в действие:', datetime(SPS_KEY_STATUS['key_input_to_activation'][2] + 2000,
                                                                   SPS_KEY_STATUS['key_input_to_activation'][1],
                                                                   SPS_KEY_STATUS['key_input_to_activation'][0])
-                                                                  )
+                         )
             show_message('Срок действия ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_ttl']])
             show_message('Период ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_period']])
-            show_message('Дата ввода ключа в изделие:', datetime(SPS_KEY_STATUS['key_input_to_device'][5]+2000,
+            show_message('Дата ввода ключа в изделие:', datetime(SPS_KEY_STATUS['key_input_to_device'][5] + 2000,
                                                                  SPS_KEY_STATUS['key_input_to_device'][4],
                                                                  SPS_KEY_STATUS['key_input_to_device'][3],
                                                                  SPS_KEY_STATUS['key_input_to_device'][2],
                                                                  SPS_KEY_STATUS['key_input_to_device'][1],
                                                                  SPS_KEY_STATUS['key_input_to_device'][0])
-                                                                 )
-            
-            show_message('Дата ввода ключа в работу:', datetime(SPS_KEY_STATUS['key_input_to_work'][5]+2000,
+                         )
+
+            show_message('Дата ввода ключа в работу:', datetime(SPS_KEY_STATUS['key_input_to_work'][5] + 2000,
                                                                 SPS_KEY_STATUS['key_input_to_work'][4],
                                                                 SPS_KEY_STATUS['key_input_to_work'][3],
                                                                 SPS_KEY_STATUS['key_input_to_work'][2],
                                                                 SPS_KEY_STATUS['key_input_to_work'][1],
                                                                 SPS_KEY_STATUS['key_input_to_work'][0])
-                                                                )
+                         )
 
     elif operation_result == FL_STATUS_GET_KEYS_STORAGE_OK:
-        SPS_KEY_STORAGE_LEN = 9 # идентификатор ключа (4 байта) + дата (гмд) (3 байта) + срок действия 1 байт + период ключа 1 байт
-        for i in range((reply.length-2)//SPS_KEY_STORAGE_LEN):
-            key_id, key_input_to_action, key_ttl, key_period = struct.unpack('>4s3sBB', reply.body[2+i*SPS_KEY_STORAGE_LEN:2+(i+1)*SPS_KEY_STORAGE_LEN])
+        SPS_KEY_STORAGE_LEN = 9  # идентификатор ключа (4 байта) + дата (гмд) (3 байта) + срок действия 1 байт + период ключа 1 байт
+        for i in range((reply.length - 2) // SPS_KEY_STORAGE_LEN):
+            key_id, key_input_to_action, key_ttl, key_period = struct.unpack('>4s3sBB', reply.body[2 + i * SPS_KEY_STORAGE_LEN:2 + (i + 1) * SPS_KEY_STORAGE_LEN])
             show_message('Идентификатор ключа:', key_id.decode())
-            show_message('Дата ввода ключа в работу:', datetime(key_input_to_action[2]+2000, 
+            show_message('Дата ввода ключа в работу:', datetime(key_input_to_action[2] + 2000,
                                                                 key_input_to_action[1],
                                                                 key_input_to_action[0]))
             show_message('Срок действия ключа:', SPS_KEY_TTL[key_ttl])
@@ -376,6 +428,7 @@ def get_zas_command(reply, show_message):
     elif operation_result == FL_STATUS_NOISE_KEYS_NUMBER:
         show_message('Возможное количество ключей', int(reply.body[2:4].hex(), 16))
 
+
 def get_fatal_error(reply, show_message):
     '''Обработка квитанции MTCA_FATAL_ERROR об общей внутренней ошибке'''
     # NB! При установке режима работы "Контроль" возвращает 4 байта параметров, что не является ошибкой,
@@ -383,9 +436,11 @@ def get_fatal_error(reply, show_message):
     if reply.length == 0:
         show_message(MTCA[reply.code])
 
+
 def get_asyncaddress(reply, show_message):
     '''Обработка квитанции MTCA_ASYNADDRESS с адресом для асинхронных сообщений'''
     show_message('%s %s:%d' % (MTCA[reply.code], socket.inet_ntoa(reply.body[0:4]), int.from_bytes(reply.body[4:6], 'big')))
+
 
 handlers = {MTCA_OK_MODE: get_clock,
             MTCA_CRC: get_crc,
@@ -396,6 +451,7 @@ handlers = {MTCA_OK_MODE: get_clock,
             MTCA_FATAL_ERROR: get_fatal_error,
             MTCA_ASYNADDRESS: get_asyncaddress
             }
+
 
 def parse_reply(data, show_message):
     '''Обработчик квитанций'''

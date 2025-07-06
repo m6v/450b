@@ -14,18 +14,17 @@ from PyQt5.Qt import QApplication
 from MainWindow import MainWindow
 
 if __name__ == '__main__':
-
-    # При запуске упакованного исходника ресурсы, распаковываются во временный каталог,
-    # указанный в sys._MEIPASS, в этом случае путь к исходному каталогу взять из sys.executable
+    # При запуске упакованного исходника ресурсы распаковываются во временный каталог, который указывается в sys._MEIPASS
+    # в этом случае путь к исходному каталогу взять из sys.executable
     if hasattr(sys, "_MEIPASS"):
         INITIAL_DIR = os.path.dirname(sys.executable)
     else:
         INITIAL_DIR = os.path.dirname(os.path.realpath(__file__))
-    
-    config = configparser.ConfigParser(allow_no_value = True)
+
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read(os.path.join(INITIAL_DIR, 'config.ini'))
     run_as_root = int(config.get('general', 'root', fallback='0'))
-        
+
     if run_as_root and os.getuid() != 0:
         # В Astra Linux использовать fly-su, в других ОС pkexec
         if os.path.isfile('/usr/bin/fly-su'):

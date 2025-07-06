@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>../icons/450b.png</file>
+    <file>../icons/hide.png</file>
+    <file>../icons/view.png</file>
+</qresource>
+</RCC>
+<!-- Компилировать командой pyrcc5 resources.qrc -o resources.py -->

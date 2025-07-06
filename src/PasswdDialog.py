@@ -5,29 +5,31 @@ from PyQt5.Qt import QDialog, QLineEdit, QRegularExpression, QRegularExpressionV
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 class PasswdDialog(QDialog):
     """Диалоговое окно, отображающее поле ввода пароля изделия"""
     def __init__(self, parent):
         super().__init__(parent)
         uic.loadUi(os.path.join(CURRENT_DIR, 'PasswdDialog.ui'), self)
-        
+
         validator = QRegularExpressionValidator(QRegularExpression("[0-9]+"))
         self.passwdLineEdit.setValidator(validator)
-        
-        self.iconShow = QIcon('../icons/view.png')
-        self.iconHide = QIcon('../icons/hide.png')
+        # При использовании файла ресурсов указываем относительный путь,
+        # а двоеточие(:) и префикс, указанный в файле ресурсов
+        self.iconShow = QIcon(':/icons/view.png')
+        self.iconHide = QIcon(':/icons/hide.png')
         self.showPassAction = self.passwdLineEdit.addAction(self.iconShow, QLineEdit.TrailingPosition)
         self.showPassAction.setCheckable(True)
         self.showPassAction.toggled.connect(self.toggle_password_visibility)
-        
+
         # Подсказку внутри поля ввода не используем, т.к. уже есть надпись над полем ввода
         # self.passwdLineEdit.setPlaceholderText('Введите пароль...')
-        
+
         icon = self.style().standardIcon(getattr(QStyle, 'SP_DialogOkButton'))
         self.okPushButton.setIcon(icon)
         icon = self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton'))
         self.cancelPushButton.setIcon(icon)
-       
+
         self.passwdLineEdit.textChanged[str].connect(self.passwd_changed)
 
     def exec(self, label_text='Введите пароль изделия (12 симв.)'):

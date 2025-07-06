@@ -14,8 +14,8 @@
    <string>Программа управления СКЗИ 450Б</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>../icons/450Б.png</normaloff>../icons/450Б.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/450b.png</normaloff>:/icons/450b.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -88,7 +88,7 @@
      <x>0</x>
      <y>0</y>
      <width>877</width>
-     <height>28</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -223,7 +223,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>exitAction</sender>

@@ -1,6 +1,4 @@
-import configparser
 import os
-import sys
 
 from PyQt5 import uic
 from PyQt5.Qt import QDialog, QMessageBox
@@ -27,7 +25,7 @@ class SettingsDialog(QDialog):
         self.devPortSpinBox.setValue(int(self.config.get('network', 'port', fallback='4660')))
         super().showEvent(e)
         self.update()
-        
+
     def accept(self):
         self.config.set('network', 'host', self.devAddrLineEdit.text())
         self.config.set('network', 'port', str(self.devPortSpinBox.value()))
