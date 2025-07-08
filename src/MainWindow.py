@@ -3,6 +3,7 @@ import configparser
 import functools
 import errno
 import json
+import logging
 import os
 import socket
 import subprocess
@@ -30,6 +31,8 @@ if hasattr(sys, "_MEIPASS"):
 
 configfile = os.path.join(INITIAL_DIR, 'config.ini')
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt='%Y-%m-%d %H:%M:%S')
+
 
 class RecieverThread(QThread):
     trigger = pyqtSignal(bytes)
@@ -53,7 +56,8 @@ class MainWindow(QMainWindow):
         uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
 
         '''
-        Вариант с загрузкой формы из файла ресурсов
+        Вариант с загрузкой формы из файла ресурсов, создаваемого с помощью pyrcc5
+        Не требует распространения ui-файлов вместе с приложением, только файл ресурсов
         stream = QFile(":MainWindow.ui")
         stream.open(QFile.ReadOnly)
         uic.loadUi(stream, self)
@@ -77,7 +81,7 @@ class MainWindow(QMainWindow):
             state = int(self.config.get('window', 'state'))
             self.restoreState(bytearray(state))
         except configparser.NoOptionError as e:
-            print(e)
+            logging.warning(e)
 
         hostname = socket.gethostname()
         # Подсчитать 16-разрядную контр. сумму от hostname и использовать ее в качестве идентификатора программы
@@ -129,9 +133,9 @@ class MainWindow(QMainWindow):
                     else:
                         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), fname)
                 except FileNotFoundError as e:
-                    print(e)
+                    logging.error(e)
         except configparser.NoOptionError as e:
-            print(e)
+            logging.warning(e)
 
         # Настроить контекстое меню resultsPlainTextEdit
         self.resultsPlainTextEdit.setContextMenuPolicy(Qt.CustomContextMenu)
