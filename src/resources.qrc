@@ -3,6 +3,6 @@
     <file>../icons/450b.png</file>
     <file>../icons/hide.png</file>
     <file>../icons/view.png</file>
+    <file>MainWindow.ui</file>
 </qresource>
 </RCC>
-<!-- Компилировать командой pyrcc5 resources.qrc -o resources.py -->

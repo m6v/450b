@@ -21,7 +21,7 @@ sudo apt install python3-pip
 sudo pip3 install --break-system-packages pyinstaller-hooks-contrib
 ```
 
-# Создание исполняемого файла
+## Создание исполняемого файла
 
 Для создания исполняемого файла достаточно выполнить команду
 
@@ -175,6 +175,7 @@ def resource_path(relative_path):
 Для этого достаточно только описать разрешения приложения в отдельном xml-конфиге.
 
 Например, для программы xed создадим файл ```/usr/share/polkit-1/actions/org.gnome.xed.policy```
+
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">

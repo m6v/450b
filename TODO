@@ -16,6 +16,4 @@ Error accessing /tmp/_MEIJdURKs/main.py: No such file or directory
 
 Как в Makefile сделать пересборку при изменении .py или .ui файлов, сейчас пересобриается только при удалении каталога dist
 
-Упаковать иконки в файл с ресурсами
-
 Сделать deb-пакет

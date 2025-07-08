@@ -10,7 +10,7 @@ import sys
 import time
 
 from PyQt5 import uic
-from PyQt5.Qt import QMainWindow, QAction, QThread, QCursor, QMessageBox, QRect
+from PyQt5.Qt import QMainWindow, QAction, QThread, QCursor, QMessageBox, QRect, QFile
 from PyQt5.QtCore import Qt, pyqtSignal
 
 import protoproc
@@ -23,11 +23,10 @@ from PasswdDialog import PasswdDialog
 from SettingsDialog import SettingsDialog
 
 INITIAL_DIR = CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-# При запуске упакованного исходника ресурсы распаковываются во временный каталог, который указывается в sys._MEIPASS
-# в этом случае путь к исходному каталогу взять из sys.executable
+# Если установлена переменная окружения _MEIPASS, то запуск происходит из временного каталога,
+# созданного при распаковке бандла. В этом случае путь к исходному каталогу взять из sys.executable
 if hasattr(sys, "_MEIPASS"):
     INITIAL_DIR = os.path.dirname(sys.executable)
-# INITIAL_DIR = getattr(sys, '_MEIPASS', os.path.dirname(os.path.realpath(__file__)))
 
 configfile = os.path.join(INITIAL_DIR, 'config.ini')
 
@@ -52,6 +51,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi(os.path.join(CURRENT_DIR, 'MainWindow.ui'), self)
+
+        '''
+        Вариант с загрузкой формы из файла ресурсов
+        stream = QFile(":MainWindow.ui")
+        stream.open(QFile.ReadOnly)
+        uic.loadUi(stream, self)
+        stream.close()
+        '''
 
         self.config = configparser.ConfigParser(allow_no_value=True)
         # Установить чувствительность ключей к регистру

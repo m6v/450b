@@ -14,7 +14,7 @@ class PasswdDialog(QDialog):
 
         validator = QRegularExpressionValidator(QRegularExpression("[0-9]+"))
         self.passwdLineEdit.setValidator(validator)
-        # При использовании файла ресурсов указываем относительный путь,
+        # При использовании файла ресурсов указывать не относительный путь,
         # а двоеточие(:) и префикс, указанный в файле ресурсов
         self.iconShow = QIcon(':/icons/view.png')
         self.iconHide = QIcon(':/icons/hide.png')
@@ -32,7 +32,7 @@ class PasswdDialog(QDialog):
 
         self.passwdLineEdit.textChanged[str].connect(self.passwd_changed)
 
-    def exec(self, label_text='Введите пароль изделия (12 симв.)'):
+    def exec(self, label_text='Введите пароль изделия (до 12 цифр)'):
         self.passwdLabel.setText(label_text)
         self.passwdLineEdit.setText('')
         # Возвратить пароль или False, если была нажата клавиша "Отмена"
