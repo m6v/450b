@@ -412,7 +412,7 @@ def get_zas_command(reply, show_message):
             # Возвращает в key_input_to_work шесть нулей?!
             # show_message('Дата ввода ключа в работу:', datetime(*SPS_KEY_STATUS['key_input_to_work'][::-1]) + relativedelta(years=2000))
             show_message('Дата ввода ключа в работу:', datetime(SPS_KEY_STATUS['key_input_to_work'][5]+2000,
-                                                                SPS_KEY_STATUS['key_input_to_work'][4::-1]
+                                                                *SPS_KEY_STATUS['key_input_to_work'][4::-1]
                                                                 )
                          )
 
@@ -422,7 +422,11 @@ def get_zas_command(reply, show_message):
             key_id, key_input_to_action, key_ttl, key_period = struct.unpack('>4s3sBB', reply.body[2 + i * SPS_KEY_STORAGE_LEN:2 + (i + 1) * SPS_KEY_STORAGE_LEN])
             show_message('Идентификатор ключа:', key_id.decode())
             # В key_input_to_action трехбайтное двоичное представление даты ddMMyy
-            show_message('Дата ввода ключа в работу:', datetime(*key_input_to_action[3::-1]) + relativedelta(years=2000))
+            # show_message('Дата ввода ключа в работу:', datetime(*key_input_to_action[::-1]) + relativedelta(years=2000))
+            show_message('Дата ввода ключа в работу:', datetime(key_input_to_action[2]+2000, 
+                                                                key_input_to_action[1],
+                                                                key_input_to_action[0])
+                         )
             show_message('Срок действия ключа:', SPS_KEY_TTL[key_ttl])
             show_message('Период ключа:', SPS_KEY_TTL[key_period])
 
