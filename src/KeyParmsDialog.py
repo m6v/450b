@@ -47,7 +47,7 @@ class KeyParmsDialog(QDialog):
             key = protoproc.Key(self.keyIdLineEdit.text(),
                                 0,
                                 self.keyNumberLineEdit.text(),
-                                str(date.year()-2000) + str(date.month()) + str(date.day()),
+                                date.toString('yyMMdd'),
                                 list(filter(lambda x: protoproc.SPS_KEY_TTL[x] == self.durationComboBox.currentText(), protoproc.SPS_KEY_TTL))[0],
                                 list(filter(lambda x: protoproc.SPS_KEY_PERIOD[x] == self.periodComboBox.currentText(), protoproc.SPS_KEY_PERIOD))[0]
                                 )

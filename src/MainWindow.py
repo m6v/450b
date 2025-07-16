@@ -1,3 +1,4 @@
+import asyncio
 import binascii
 import configparser
 import functools
@@ -9,6 +10,7 @@ import socket
 import subprocess
 import sys
 import time
+import traceback
 
 from PyQt5 import uic
 from PyQt5.Qt import QMainWindow, QAction, QThread, QCursor, QMessageBox, QRect, QFile
@@ -57,11 +59,11 @@ class MainWindow(QMainWindow):
 
         '''
         Вариант с загрузкой формы из файла ресурсов, создаваемого с помощью pyrcc5
-        Не требует распространения ui-файлов вместе с приложением, только файл ресурсов
         stream = QFile(":MainWindow.ui")
         stream.open(QFile.ReadOnly)
         uic.loadUi(stream, self)
         stream.close()
+        Не требует распространения ui-файлов вместе с приложением (только файл ресурсов)
         '''
 
         self.config = configparser.ConfigParser(allow_no_value=True)
@@ -191,16 +193,16 @@ class MainWindow(QMainWindow):
         if self.debug:
             print('Recieve from')
             protoproc.hexdump(reply)
-        # Вызов функции обработки квитанций (второй параметр - функция вывода результатов обработки)
-        # Функция возвращает None или словарь с параметрами
-        result = protoproc.parse_reply(reply, self.show_message)
         try:
+            # Вызов функции обработки квитанций (второй параметр - функция вывода результатов обработки)
+            # Функция возвращает None или словарь с параметрами
+            result = protoproc.parse_reply(reply, self.show_message)
             if result['mode'] is not None:
                 self.mode = result['mode']
                 self.modeComboBox.setCurrentIndex(self.mode)
                 self.keysMenu.setEnabled(self.mode == protoproc.REGLAMENT)
-        except:
-            pass
+        except Exception as e:
+            logging.warning(traceback.format_exc())
 
     def mode_changed(self, index):
         '''Отправить запрос на изменение режима работы'''
@@ -244,17 +246,24 @@ class MainWindow(QMainWindow):
 
         self.setCursor(QCursor(Qt.WaitCursor))
 
+        logging.info('set_mode(KEYGEN)')
         self.send_request(protoproc.set_mode(protoproc.KEYGEN))
         time.sleep(10)
+        logging.info('set_clock')
         self.send_request(protoproc.set_clock())
+        time.sleep(10)
+        logging.info('set_mode(REGLAMENT)')
         self.send_request(protoproc.set_mode(protoproc.REGLAMENT))
         time.sleep(10)
+        logging.info('gen_key')
         self.send_request(protoproc.gen_key(key))
         time.sleep(10)
         # Чтобы устройство реагировало на запросы, нужно переключить его в режим "Работа",
         # выдержать паузу 5-20 сек и снова установить время!
+        logging.info('set_mode(WORK)')
         self.send_request(protoproc.set_mode(protoproc.WORK))
         time.sleep(10)
+        logging.info('set_clock')
         self.send_request(protoproc.set_clock())
 
         self.setCursor(QCursor(Qt.ArrowCursor))

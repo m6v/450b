@@ -1,5 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import socket
 import struct
 
@@ -307,7 +308,7 @@ def set_clock():
                                      now.year - 2000)
 
 
-def set_mode(mode, channel=1):
+def set_mode(mode, channel=0):
     '''Установка/изменение режима работы'''
     '''
     NB! При переводе в режим контроля, возращается квитанция MTCA_FATAL_ERROR (0x0085),
@@ -392,36 +393,20 @@ def get_zas_command(reply, show_message):
             show_message('Номер ключевой зоны:', SPS_KEY_STATUS['key_zone'])
             show_message('Тип ключа:', SPS_KEY_STATUS['key_type'])
             show_message('Алгоритм ключа:', KEY_ALGORITHM[SPS_KEY_STATUS['key_algorithm']])
-            show_message('Дата ввода ключа в действие:', datetime(SPS_KEY_STATUS['key_input_to_activation'][2] + 2000,
-                                                                  SPS_KEY_STATUS['key_input_to_activation'][1],
-                                                                  SPS_KEY_STATUS['key_input_to_activation'][0])
-                         )
+            show_message('Дата ввода ключа в действие:', datetime(*SPS_KEY_STATUS['key_input_to_activation'][3::-1]) + relativedelta(years=2000))
             show_message('Срок действия ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_ttl']])
             show_message('Период ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_period']])
-            show_message('Дата ввода ключа в изделие:', datetime(SPS_KEY_STATUS['key_input_to_device'][5] + 2000,
-                                                                 SPS_KEY_STATUS['key_input_to_device'][4],
-                                                                 SPS_KEY_STATUS['key_input_to_device'][3],
-                                                                 SPS_KEY_STATUS['key_input_to_device'][2],
-                                                                 SPS_KEY_STATUS['key_input_to_device'][1],
-                                                                 SPS_KEY_STATUS['key_input_to_device'][0])
-                         )
-
-            show_message('Дата ввода ключа в работу:', datetime(SPS_KEY_STATUS['key_input_to_work'][5] + 2000,
-                                                                SPS_KEY_STATUS['key_input_to_work'][4],
-                                                                SPS_KEY_STATUS['key_input_to_work'][3],
-                                                                SPS_KEY_STATUS['key_input_to_work'][2],
-                                                                SPS_KEY_STATUS['key_input_to_work'][1],
-                                                                SPS_KEY_STATUS['key_input_to_work'][0])
-                         )
+            show_message('Дата ввода ключа в изделие:', datetime(*SPS_KEY_STATUS['key_input_to_device'][6::-1]) + relativedelta(years=2000))
+            # Возвращает в key_input_to_work шесть нулей?!
+            show_message('Дата ввода ключа в работу:', datetime(*SPS_KEY_STATUS['key_input_to_work'][6::-1]) + relativedelta(years=2000))
 
     elif operation_result == FL_STATUS_GET_KEYS_STORAGE_OK:
         SPS_KEY_STORAGE_LEN = 9  # идентификатор ключа (4 байта) + дата (гмд) (3 байта) + срок действия 1 байт + период ключа 1 байт
         for i in range((reply.length - 2) // SPS_KEY_STORAGE_LEN):
             key_id, key_input_to_action, key_ttl, key_period = struct.unpack('>4s3sBB', reply.body[2 + i * SPS_KEY_STORAGE_LEN:2 + (i + 1) * SPS_KEY_STORAGE_LEN])
             show_message('Идентификатор ключа:', key_id.decode())
-            show_message('Дата ввода ключа в работу:', datetime(key_input_to_action[2] + 2000,
-                                                                key_input_to_action[1],
-                                                                key_input_to_action[0]))
+            # В key_input_to_action трехбайтное двоичное представление даты ddMMyy
+            show_message('Дата ввода ключа в работу:', datetime(*key_input_to_action[3::-1]) + relativedelta(years=2000))
             show_message('Срок действия ключа:', SPS_KEY_TTL[key_ttl])
             show_message('Период ключа:', SPS_KEY_TTL[key_period])
 
