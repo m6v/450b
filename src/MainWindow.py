@@ -315,7 +315,8 @@ class MainWindow(QMainWindow):
 
     def reset_all(self):
         '''Отправить запрос на сброс устройства'''
-        if QMessageBox.question(self, 'Внимание', 'После выполнения команды вся информация в запоминающем устройстве изделия будет стерта! Продолжить?') == QMessageBox.StandardButton.Yes:
+        # В Astra Linux SE 1.6.10 QMessageBox.StandardButton не имеет атрибута Yes, поэтому используем не QMessageBox.StandardButton.Yes, а QMessageBox.Yes
+        if QMessageBox.question(self, 'Внимание', 'После выполнения команды вся информация в запоминающем устройстве изделия будет стерта! Продолжить?') == QMessageBox.Yes:
             self.send_request(protoproc.reset_all())
             time.sleep(2)
             self.send_request(protoproc.set_clock())

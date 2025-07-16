@@ -1,6 +1,8 @@
 from collections import namedtuple
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+# В стандартной библиотеке Python 3.5.3 из Astra Linux SE 1.6.10 нет dateutil,
+# поэтому при преобразовании дат используются только возможности datetime
+# from dateutil.relativedelta import relativedelta
 import socket
 import struct
 
@@ -393,12 +395,26 @@ def get_zas_command(reply, show_message):
             show_message('Номер ключевой зоны:', SPS_KEY_STATUS['key_zone'])
             show_message('Тип ключа:', SPS_KEY_STATUS['key_type'])
             show_message('Алгоритм ключа:', KEY_ALGORITHM[SPS_KEY_STATUS['key_algorithm']])
-            show_message('Дата ввода ключа в действие:', datetime(*SPS_KEY_STATUS['key_input_to_activation'][3::-1]) + relativedelta(years=2000))
+            # В стандартной библиотеке Python 3.5.3 из Astra Linux SE 1.6.10 нет dateutil, поэтому более простой вариант не работает!
+            # show_message('Дата ввода ключа в действие:', datetime(*SPS_KEY_STATUS['key_input_to_activation'][::-1]) + relativedelta(years=2000))
+            show_message('Дата ввода ключа в действие:', datetime(SPS_KEY_STATUS['key_input_to_activation'][2]+2000,
+                                                                  SPS_KEY_STATUS['key_input_to_activation'][1],
+                                                                  SPS_KEY_STATUS['key_input_to_activation'][0]
+                                                                  )
+                         )
             show_message('Срок действия ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_ttl']])
             show_message('Период ключа:', SPS_KEY_TTL[SPS_KEY_STATUS['key_period']])
-            show_message('Дата ввода ключа в изделие:', datetime(*SPS_KEY_STATUS['key_input_to_device'][6::-1]) + relativedelta(years=2000))
+            # show_message('Дата ввода ключа в изделие:', datetime(*SPS_KEY_STATUS['key_input_to_device'][::-1]) + relativedelta(years=2000))
+            show_message('Дата ввода ключа в изделие:', datetime(SPS_KEY_STATUS['key_input_to_device'][5]+2000,
+                                                                 *SPS_KEY_STATUS['key_input_to_device'][4::-1]
+                                                                 )
+                         )
             # Возвращает в key_input_to_work шесть нулей?!
-            show_message('Дата ввода ключа в работу:', datetime(*SPS_KEY_STATUS['key_input_to_work'][6::-1]) + relativedelta(years=2000))
+            # show_message('Дата ввода ключа в работу:', datetime(*SPS_KEY_STATUS['key_input_to_work'][::-1]) + relativedelta(years=2000))
+            show_message('Дата ввода ключа в работу:', datetime(SPS_KEY_STATUS['key_input_to_work'][5]+2000,
+                                                                SPS_KEY_STATUS['key_input_to_work'][4::-1]
+                                                                )
+                         )
 
     elif operation_result == FL_STATUS_GET_KEYS_STORAGE_OK:
         SPS_KEY_STORAGE_LEN = 9  # идентификатор ключа (4 байта) + дата (гмд) (3 байта) + срок действия 1 байт + период ключа 1 байт
